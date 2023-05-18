@@ -1,3 +1,4 @@
+import streamlit as st
 from streamlit_ace import st_ace
 from pandas_func import *
 import pandas as pd
@@ -36,7 +37,19 @@ st.code("df.Education = # ваш код", language="python")
 
 loc = {}
 content = st_ace(
-Expand All	@@ -53,29 +46,33 @@
+    placeholder="Ваш код",
+    language="python",
+    theme="chrome",
+    keybinding="vscode",
+    show_gutter=True,
+    min_lines=10,
+    key="ace",
+)
+
+if content:
+    st.markdown("### Результат")
+    try:
+        with stdoutIO() as s:
             exec(content, globals(), loc)
         st.write(s.getvalue())
         try:
@@ -66,3 +79,4 @@ Expand All	@@ -53,29 +46,33 @@
         except Exception as ex:
             st.error(ex)
     except Exception as ex:
+        st.error(ex)
