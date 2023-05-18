@@ -2,38 +2,31 @@ import streamlit as st
 from streamlit_ace import st_ace
 from pandas_func import *
 import pandas as pd
+import numpy as np
 
 
 hide_part_of_page()
-st.subheader("HW9. Блок Pandas. Задача 7")
+st.subheader("HW9. Блок Pandas. Задача 5")
 
-# df = pd.read_csv('hr-analysis-prediction.csv')
+df = pd.read_csv("hr-analysis-prediction.csv")
 data_check = pd.read_csv("hr-analysis-prediction.csv")
-data_check_map = pd.read_csv("hr-analysis-prediction.csv")
-dict_education_check = {
-    1: "Below College",
-    2: "College",
-    3: "Bachelor",
-    4: "Master",
-    5: "Doctor",
-}
-data_check_map.Education = data_check_map.Education.map(dict_education_check)
+group_check = df.groupby(["Department", "EducationField", "Attrition"])[
+    ["MonthlyIncome"]
+].median()
+group_check_2 = df.groupby(["Department", "EducationField", "Attrition"]).MonthlyIncome.median().reset_index()
 
-st.markdown(
-    "- Вам дан датасет **hr-analysis-prediction.csv**\n"
-    "- Импортируйте pandas и напишите краткий алиас **pd**\n"
-    "- Прочитайте датасет hr-analysis-prediction.csv и запишите его в виде DataFrame в переменную **df**\n"
-    "- Представьте, что датасет лежит в той же папке, что и ваш код\n"
-    "- Создайте переменную **dict_education**, куда запишите словарь (ключ тип int, значение тип str) с соответвующими значениями признака **Education**:\n"
-    "   - **1** соответсвует значению **Below College**\n"
-    "   - **2** соответсвует значению **College**\n"
-    "   - **3** соответсвует значению **Bachelor**\n"
-    "   - **4** соответсвует значению **Master**\n"
-    "   - **5** соответсвует значению **Doctor**\n"
-    "- Испольуя словарь **dict_education** произведите замену значений в признаке **Education**\n"
-    "- Чтобы в переменной **df** в признаке **Education** произошла замена, сделайте присваивание:"
-)
-st.code("df.Education = # ваш код", language="python")
+col1, col2 = st.columns([2, 1])
+with col1:
+    st.markdown(
+        "- Вам дан датасет **hr-analysis-prediction.csv**\n"
+        "- Пусть ваш датасет уже записан в переменную **df** (заново прописывать не нужно)\n"
+        "- Создайте переменную **median_group**\n"
+        "- Присвойте переменной **median_group** результат группировки датасета **df** по полям **Department, EducationField** и **Attrition**, в качестве функции агрегации выберите медиану по полю **MonthlyIncome** (должен быть тип DataFrame)"
+    )
+with col2:
+    st.write("**Пример первых 5 строк результата:**")
+    st.write(group_check[:5])
+
 
 loc = {}
 content = st_ace(
@@ -53,29 +46,33 @@ if content:
             exec(content, globals(), loc)
         st.write(s.getvalue())
         try:
+            assert data_check.equals(df), "Не перезаписывайте переменную df"
+            # median_group
             assert (
-                "pd" in loc.keys()
-            ), "Импортируйте pandas, а также используйте алиас pd"
-            assert "df" in loc.keys(), "Проверьте название переменной df"
-
-            # dict_education
-            assert (
-                "dict_education" in loc.keys()
-            ), "Проверьте название переменной dict_education"
+                "median_group" in loc.keys()
+            ), "Проверьте название переменной median_group"
             assert isinstance(
-                loc["dict_education"], dict
-            ), "Проверьте тип переменной dict_education, должен быть dict"
-            assert (
-                loc["dict_education"] == dict_education_check
-            ), "Проверьте значения в переменной dict_education"
+                loc["median_group"], pd.DataFrame
+            ), "Проверьте тип переменной median_group, должен быть DataFrame"
+            #st.dataframe(loc["median_group"])
+            assert np.array_equal(
+                loc["median_group"].index, group_check.index
+            ) or np.array_equal(
+                loc["median_group"].index, group_check_2.index
+            ), "Проверьте признаки, по которым вы делали группировку"
+            assert np.array_equal(
+                loc["median_group"].columns, group_check.columns
+            ) or np.array_equal(
+                loc["median_group"].columns, group_check_2.columns
+            ), "Проверьте признаки, по которым вы находили медиану"
 
-            # df
-            assert isinstance(
-                loc["df"], pd.DataFrame
-            ), "Проверьте датасет df, должен быть тип DataFrame, возможно ошибка в присваивании, либо в импорте данных"
-            assert data_check_map.equals(loc["df"]), "Проверьте результат замены в df"
-            st.success("Все верно! Ключ = 6")
+            assert group_check.equals(
+                loc["median_group"]
+            ) or group_check_2.equals(
+                loc["median_group"]
+            ), "Проверьте результат в переменной median_group"
 
+            st.success("Все верно! Ключ = 77")
         except Exception as ex:
             st.error(ex)
     except Exception as ex:
