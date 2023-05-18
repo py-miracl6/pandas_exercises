@@ -13,6 +13,7 @@ data_check = pd.read_csv("hr-analysis-prediction.csv")
 group_check = df.groupby(["Department", "EducationField", "Attrition"])[
     ["MonthlyIncome"]
 ].median()
+group_check_2 = df.groupby(['Department', 'EducationField', 'Attrition']).MonthlyIncome.median().reset_index()
 
 col1, col2 = st.columns([2, 1])
 with col1:
@@ -56,12 +57,18 @@ if content:
             #st.dataframe(loc["median_group"])
             assert np.array_equal(
                 loc["median_group"].index, group_check.index
+            ) or np.array_equal(
+                loc["median_group"].index, group_check_2.index
             ), "Проверьте признаки, по которым вы делали группировку"
             assert np.array_equal(
                 loc["median_group"].columns, group_check.columns
+            ) or np.array_equal(
+                loc["median_group"].columns, group_check_2.columns
             ), "Проверьте признаки, по которым вы находили медиану"
 
             assert group_check.equals(
+                loc["median_group"]
+            ) or group_check_2.equals(
                 loc["median_group"]
             ), "Проверьте результат в переменной median_group"
 
